@@ -1,0 +1,9 @@
+{
+    "extends": [
+      "tslint-config-0xproject"
+    ],
+    "rules": {
+      "trailing-comma": false
+    }
+  }
+  

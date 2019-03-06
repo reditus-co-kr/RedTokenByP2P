@@ -1,0 +1,53 @@
+{
+  "name": "red-token-by-p2p",
+  "version": "1.0.0",
+  "description": "reditus rms system used blockchain in p2p service",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test --network test",
+    "compile": "truffle compile"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://git.reditus.co.kr:7990/scm/main/redtokenbyp2p.git"
+  },
+  "keywords": [],
+  "author": "Youngsoo Kim <dadfkim@hanmail.net> (https://www.linkedin.com/in/kyskaritaslife/)",
+  "license": "(ISC OR MIT)",
+  "devDependencies": {
+    "@types/bignumber.js": "^4.0.2",
+    "@types/bluebird": "^3.5.26",
+    "@types/lodash": "^4.14.63",
+    "@types/node": "^7.10.5",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "chai-as-promised-typescript-typings": "^0.0.3",
+    "chai-bignumber": "^2.0.1",
+    "chai-typescript-typings": "^0.0.0",
+    "dirty-chai": "^2.0.1",
+    "ganache-cli": "^6.4.1",
+    "truffle": "^5.0.6",
+    "tsc-watch": "^1.0.16",
+    "types-bn": "0.0.1",
+    "types-ethereumjs-util": "0.0.8",
+    "typescript": "^2.5.2",
+    "web3-typescript-typings": "^0.6.0"
+  },
+  "dependencies": {
+    "bignumber.js": "^4.0.0",
+    "bn.js": "^4.11.8",
+    "dotenv": "^5.0.0",
+    "es6-promisify": "^5.0.0",
+    "ethereumjs-abi": "^0.6.4",
+    "ethereumjs-util": "^5.1.1",
+    "lodash": "^4.17.4",
+    "request": "^2.81.0",
+    "truffle-hdwallet-provider": "^1.0.5",
+    "tslint": "^5.13.1",
+    "tslint-config-0xproject": "^0.0.2",
+    "web3": "github:ethereum/web3.js"
+  }
+}
