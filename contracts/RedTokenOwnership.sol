@@ -34,15 +34,14 @@ contract RedTokenOwnership is RedTokenBase, ERC721, ERC165, ERC721Metadata, ERC7
   mapping (address => mapping (address => bool)) internal operatorApprovals;
 
   /** events **/
-  event ShareUsersAdded(uint256 tokenId, address owner, address from, address spender, uint256 amount);
-  event ShareUsersRemove(uint256 tokenId, address owner, address from, address to, uint256 amount);
+  event calculateShareUsers(uint256 tokenId, address owner, address from, address to, uint256 amount);
   event CollectedAmountUpdate(uint256 tokenId, address owner, uint256 amount);
 
   /** Constants **/
   // Configure these for your own deployment
   string internal constant NAME = "RedToken";
   string internal constant SYMBOL = "REDT";
-  string internal tokenMetadataBaseURI = "https://api.reditus.co.kr/";
+  string internal tokenMetadataBaseURI = "https://doc.reditus.co.kr/?docid=";
 
   /** structs **/
   function supportsInterface(
@@ -82,15 +81,18 @@ contract RedTokenOwnership is RedTokenBase, ERC721, ERC165, ERC721Metadata, ERC7
 
   /*
    * @notice tokenURI
+   * @dev do not checked in array and used function isValidRedToken value is not important, only check in redTokens array
    */
   function tokenURI(uint256 _tokenId)
     external
     view
     returns (string memory infoUrl)
   {
-    return Strings.strConcat(
-      tokenMetadataBaseURI,
-      Strings.uint2str(_tokenId));
+    if ( isValidRedToken(_tokenId) ){
+      return Strings.strConcat( tokenMetadataBaseURI, Strings.uint2str(_tokenId));
+    }else{
+      return Strings.strConcat( tokenMetadataBaseURI, Strings.uint2str(_tokenId));
+    }
   }
 
   /*
@@ -99,7 +101,6 @@ contract RedTokenOwnership is RedTokenBase, ERC721, ERC165, ERC721Metadata, ERC7
   function setTokenMetadataBaseURI(string calldata _newBaseURI) external onlyCOO {
     tokenMetadataBaseURI = _newBaseURI;
   }
-
 
   /*
    * @notice Gets the total amount of tokens stored by the contract
@@ -169,24 +170,6 @@ contract RedTokenOwnership is RedTokenBase, ERC721, ERC165, ERC721Metadata, ERC7
   {
     require(_index < balanceOf(_owner));
     return ownedTokens[_owner][_index];
-  }
-
-  /*
-   * @notice checked shareUser by shareUsersKeys
-   */
-  function isShareUser(uint256 _tokenId, address _account) public view returns (bool) {
-    require(_account != address(0));
-    require(isValidRedToken(_tokenId));
-
-    bool chechedUser = false;
-    for (uint index = 0; index < shareUsersKeys[_tokenId].length; index++) {
-      if (  shareUsersKeys[_tokenId][index] == _account ){
-        chechedUser = true;
-        break;
-      }
-    }
-
-    return chechedUser;
   }
 
   /*
@@ -285,33 +268,6 @@ contract RedTokenOwnership is RedTokenBase, ERC721, ERC165, ERC721Metadata, ERC7
   }
 
   /*
-   * @notice Claims the ownership of a given token ID
-   * @param _tokenId uint256 ID of the token being claimed by the msg.sender
-   */
-  function takeOwnership(uint256 _tokenId)
-   external
-   payable
-   whenNotPaused
-  {
-    require(isSenderApprovedFor(_tokenId));
-    _clearApprovalAndTransfer(ownerOf(_tokenId), msg.sender, _tokenId);
-  }
-
-  /*
-   * @notice Transfers the ownership of a given token ID to another address
-   * @param _to address to receive the ownership of the given token ID
-   * @param _tokenId uint256 ID of the token to be transferred
-   */
-  function transfer(address _to, uint256 _tokenId)
-    external
-    payable
-    whenNotPaused
-    onlyOwnerOf(_tokenId)
-  {
-    _clearApprovalAndTransfer(msg.sender, _to, _tokenId);
-  }
-  
-  /*
    * @notice Transfer a token owned by another address, for which the calling address has
    *  previously been granted transfer approval by the owner.
    * @param _from The address that owns the token
@@ -369,6 +325,33 @@ contract RedTokenOwnership is RedTokenBase, ERC721, ERC165, ERC721Metadata, ERC7
   }
 
   /*
+   * @notice Tells whether the msg.sender is approved to transfer the given token ID or not
+   * Checks both for specific approval and operator approval
+   * @param _tokenId uint256 ID of the token to query the approval of
+   * @return bool whether transfer by msg.sender is approved for the given token ID or not
+   */
+  function isSenderApprovedFor(uint256 _tokenId) public view returns (bool) {
+    return
+      ownerOf(_tokenId) == msg.sender ||
+      getApproved(_tokenId) == msg.sender ||
+      isApprovedForAll(ownerOf(_tokenId), msg.sender);
+  }
+
+  /*
+   * @notice Transfers the ownership of a given token ID to another address
+   * @param _to address to receive the ownership of the given token ID
+   * @param _tokenId uint256 ID of the token to be transferred
+   */
+  function transfer(address _to, uint256 _tokenId)
+    external
+    payable
+    whenNotPaused
+    onlyOwnerOf(_tokenId)
+  {
+    _clearApprovalAndTransfer(msg.sender, _to, _tokenId);
+  }
+  
+  /*
    * @notice Transfers the ownership of an NFT from one address to another address
    * @dev This works identically to the other function with an extra data parameter,
    *  except this function just sets data to ""
@@ -388,6 +371,54 @@ contract RedTokenOwnership is RedTokenBase, ERC721, ERC165, ERC721Metadata, ERC7
   }
 
   /*
+   * @notice send amount shareUsers
+   */
+  function sendAmountShareUsers(
+    uint256 _tokenId, 
+    address _to, 
+    uint256 _amount
+  ) 
+    external 
+    onlyCOO
+    returns (bool) 
+  {
+    require(_to != address(0));
+    return _calculateShareUsers(_tokenId, ownerOf(_tokenId), _to, _amount);
+  }
+
+  /*
+   * @notice send amount shareUsers
+   */
+  function sendAmountShareUsersFrom(
+    uint256 _tokenId, 
+    address _from, 
+    address _to, 
+    uint256 _amount
+  ) 
+    external 
+    onlyCOO
+    returns (bool) 
+  {
+    require(_to != address(0));
+    return _calculateShareUsers(_tokenId, _from, _to, _amount);
+  }
+
+  /*
+   * @notice update collectedAmount 
+   */
+  function updateCollectedAmount(uint256 _tokenId, uint256 _amount) external onlyCOO returns (bool) {
+    require(isValidRedToken(_tokenId));
+    require(_amount > 0);
+    
+    address owner = ownerOf(_tokenId);
+    
+    redTokens[_tokenId].collectedAmount = redTokens[_tokenId].collectedAmount.add(_amount);
+    
+    emit CollectedAmountUpdate(_tokenId, owner, _amount);
+    return true;
+  }
+
+  /*
    * @notice createRedToken
    */
   function createRedToken(
@@ -404,6 +435,21 @@ contract RedTokenOwnership is RedTokenBase, ERC721, ERC165, ERC721Metadata, ERC7
   }
 
   /*
+   * @notice burn amount a token by share users
+   */
+  function burnAmountByShareUser(
+    uint256 _tokenId, 
+    address _from, 
+    uint256 _amount
+  ) 
+    external 
+    onlyCOO 
+    returns (bool) 
+  {
+    return _calculateShareUsers(_tokenId, _from, address(0), _amount);
+  }
+  
+  /*
    * @notice burn RedToken
    */
   function burn(address _owner, uint256 _tokenId) external onlyCOO returns(bool) {
@@ -411,143 +457,25 @@ contract RedTokenOwnership is RedTokenBase, ERC721, ERC165, ERC721Metadata, ERC7
     return _burn(_owner, _tokenId);
   }
 
-  /*
-   * @notice add shareUsers
-   */
-  function addShareUsers(
-    uint256 _tokenId, 
-    address _spender, 
-    uint256 _amount
-  ) 
-    external 
-    onlyCOO
-    returns (bool) 
-  {
-    return addShareUsersFrom(_tokenId, ownerOf(_tokenId), _spender, _amount);
-  }
-
-  /*
-   * @notice add shareUsers
-   */
-  function addShareUsersFrom(
-    uint256 _tokenId, 
-    address _from, 
-    address _spender, 
-    uint256 _amount
-  ) 
-    public 
-    onlyCOO
-    returns (bool) 
-  {
-    require(_from != address(0));
-    require(_spender != address(0));
-    require(_from != _spender);
-    require(_amount > 0);
-    require(isValidRedToken(_tokenId));
-
-    address owner = ownerOf(_tokenId);
-    
-    require(shareUsers[_tokenId][_from] >= _amount);
-
-    shareUsers[_tokenId][_from] = shareUsers[_tokenId][_from].sub(_amount);
-    shareUsers[_tokenId][_spender] = shareUsers[_tokenId][_spender].add(_amount);
-
-    if ( !isShareUser(_tokenId, _spender) ) {
-      shareUsersKeys[_tokenId].push(_spender);
-    }
-
-    emit ShareUsersAdded(_tokenId, owner, _from, _spender, _amount);
-    return true;
-  }
-
-  /*
-   * @notice remove shareUsers
-   */
-  function removeShareUsers(
-    uint256 _tokenId, 
-    address _from, 
-    uint256 _amount
-  ) 
-    external 
-    onlyCOO
-    returns (bool) 
-  {
-    return removeShareUsersTo(_tokenId, _from, ownerOf(_tokenId), _amount);
-  }
-
-  /*
-   * @notice remove shareUsers
-   */
-  function removeShareUsersTo(
-    uint256 _tokenId, 
-    address _from, 
-    address _to, 
-    uint256 _amount
-  ) 
-    public 
-    onlyCOO
-    returns (bool) 
-  {
-    require(_from != address(0));
-    require(_to != address(0));
-    require(_from != _to);
-    require(_amount > 0);
-    require(isValidRedToken(_tokenId));
-
-    address owner = ownerOf(_tokenId);
-    
-    require(shareUsers[_tokenId][_from] >= _amount);
-
-    shareUsers[_tokenId][_from] = shareUsers[_tokenId][_from].sub(_amount);
-    shareUsers[_tokenId][_to] = shareUsers[_tokenId][_to].add(_amount);
-
-    emit ShareUsersRemove(_tokenId, owner, _from, _to, _amount);
-    return true;
-  }
-
-  /*
-   * @notice update collectedAmount 
-   */
-  function updateCollectedAmount(uint256 _tokenId, uint256 _amount) external onlyCOO returns (bool) {
-    require(isValidRedToken(_tokenId));
-    require(_amount > 0);
-
-    address owner = ownerOf(_tokenId);
-    
-    redTokens[_tokenId].collectedAmount = redTokens[_tokenId].collectedAmount.add(_amount);
-
-    emit CollectedAmountUpdate(_tokenId, owner, _amount);
-    return true;
-  }
-  
   /** internal function **/
-  function isContract(address addr) internal view returns (bool) {
+  function isContract(address _addr) internal view returns (bool) {
     uint size;
-    assembly { size := extcodesize(addr) }
+    assembly { size := extcodesize(_addr) }
     return size > 0;
   }
 
   /*
-   * @notice Tells whether the msg.sender is approved to transfer the given token ID or not
-   * Checks both for specific approval and operator approval
-   * @param _tokenId uint256 ID of the token to query the approval of
-   * @return bool whether transfer by msg.sender is approved for the given token ID or not
+   * @notice checked shareUser by shareUsersKeys
    */
-  function isSenderApprovedFor(uint256 _tokenId) internal view returns (bool) {
-    return
-      ownerOf(_tokenId) == msg.sender ||
-      isSpecificallyApprovedFor(msg.sender, _tokenId) ||
-      isApprovedForAll(ownerOf(_tokenId), msg.sender);
-  }
-
-  /*
-   * @notice Tells whether the msg.sender is approved for the given token ID or not
-   * @param _asker address of asking for approval
-   * @param _tokenId uint256 ID of the token to query the approval of
-   * @return bool whether the msg.sender is approved for the given token ID or not
-   */
-  function isSpecificallyApprovedFor(address _asker, uint256 _tokenId) internal view returns (bool) {
-    return getApproved(_tokenId) == _asker;
+  function isShareUser(uint256 _tokenId, address _from) internal onlyCOO view returns (bool) {
+    bool chechedUser = false;
+    for (uint index = 0; index < shareUsersKeys[_tokenId].length; index++) {
+      if (  shareUsersKeys[_tokenId][index] == _from ){
+        chechedUser = true;
+        break;
+      }
+    }
+    return chechedUser;
   }
 
   /*
@@ -560,7 +488,7 @@ contract RedTokenOwnership is RedTokenBase, ERC721, ERC165, ERC721Metadata, ERC7
     address _from, 
     address _to, 
     uint256 _tokenId
-  ) 
+  )
     whenNotPausedUser(msg.sender)
     internal 
   {
@@ -572,8 +500,65 @@ contract RedTokenOwnership is RedTokenBase, ERC721, ERC165, ERC721Metadata, ERC7
     _clearApproval(_from, _tokenId);
     _removeToken(_from, _tokenId);
     _addToken(_to, _tokenId);
+    _changeTokenShareUserByOwner(_from, _to, _tokenId);
 
     emit Transfer(_from, _to, _tokenId);
+  }
+
+  /*
+   * @notice change token owner rate sending
+   * @param _from address which you want to change rate from
+   * @param _to address which you want to change rate the token to
+   * @param _tokenId uint256 ID of the token to be change rate
+   */
+  function _changeTokenShareUserByOwner(
+    address _from, 
+    address _to, 
+    uint256 _tokenId
+  ) 
+    internal 
+    onlyCOO 
+  {
+    uint256 amount = shareUsers[_tokenId][_from];
+    delete shareUsers[_tokenId][_from];
+
+    shareUsers[_tokenId][_to] = shareUsers[_tokenId][_to].add(amount);
+
+    if ( !isShareUser(_tokenId, _to) ) {
+      shareUsersKeys[_tokenId].push(_to);
+    }
+  }
+
+  /*
+   * @notice remove shareUsers
+   */
+  function _calculateShareUsers(
+    uint256 _tokenId, 
+    address _from, 
+    address _to, 
+    uint256 _amount
+  ) 
+    internal 
+    onlyCOO
+    returns (bool) 
+  {
+    require(_from != address(0));
+    require(_from != _to);
+    require(_amount > 0);
+    require(shareUsers[_tokenId][_from] >= _amount);
+    require(isValidRedToken(_tokenId));
+
+    address owner = ownerOf(_tokenId);
+    
+    shareUsers[_tokenId][_from] = shareUsers[_tokenId][_from].sub(_amount);
+    shareUsers[_tokenId][_to] = shareUsers[_tokenId][_to].add(_amount);
+
+    if ( !isShareUser(_tokenId, _to) ) {
+      shareUsersKeys[_tokenId].push(_to);
+    }
+
+    emit calculateShareUsers(_tokenId, owner, _from, _to, _amount);
+    return true;
   }
 
   /*
@@ -610,7 +595,7 @@ contract RedTokenOwnership is RedTokenBase, ERC721, ERC165, ERC721Metadata, ERC7
     shareUsers[_newTokenId][_user] = shareUsers[_newTokenId][_user].add(_listingAmount);
     shareUsersKeys[_newTokenId].push(_user);
 
-    _mint(_user, _newTokenId);
+    _addToken(_user, _newTokenId);
 
     emit RedTokenCreated(_user,
                         _redToken.tokenId,
@@ -623,18 +608,6 @@ contract RedTokenOwnership is RedTokenBase, ERC721, ERC165, ERC721Metadata, ERC7
     return _newTokenId;
   }
   
-  /*
-  * @notice Mint token function
-  * @param _to The address that will own the minted token
-  * @param _tokenId uint256 ID of the token to be minted by the msg.sender
-  */
-  function _mint(address _to, uint256 _tokenId) private {
-    require(_to != address(0));
-    _addToken(_to, _tokenId);
-
-    emit Transfer(address(0), _to, _tokenId);
-  }
-
   /*
   * @notice Internal function to add a token ID to the list of a given address
   * @param _to address representing the new owner of the given token ID
@@ -689,5 +662,4 @@ contract RedTokenOwnership is RedTokenBase, ERC721, ERC165, ERC721Metadata, ERC7
     emit Transfer(_owner, address(0), _tokenId);
     return true;
   }
-
 }

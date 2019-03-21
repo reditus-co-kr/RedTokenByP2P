@@ -5,10 +5,7 @@ pragma solidity 0.5.4;
  * @notice This contract defines organizational roles and permissions.
  */
 contract RedTokenAccessControl {
-  /*
-   * @notice ContractUpgrade is the event that will be emitted if we set a new contract address
-   */
-  event ContractUpgrade(address newContract);
+
   event Paused();
   event Unpaused();
   event PausedUser(address indexed account);
@@ -234,6 +231,4 @@ contract RedTokenAccessControl {
   function unpauseUser(address account) external onlyCLevel whenPausedUser(account) {
     _unpausedUser(account);
   }
-
-
 }

@@ -137,5 +137,4 @@ contract RedTokenBase is RedTokenAccessControl {
     
     return (addrs, amounts);
   }
-
 }

@@ -47,17 +47,4 @@ library Strings {
     }
     return string(bstr);
   }
-
-  /*
-   * ref : https://gitter.im/ethereum/solidity?at=56b8a608939ffd5d15f66e99
-   */
-  function toBytes(uint _num) internal pure returns (bytes memory _ret) {
-    assembly {
-      _ret := mload(0x10)
-      mstore(_ret, 0x20)
-      mstore(add(_ret, 0x20), _num)
-    }
-  }
-
-
 }
