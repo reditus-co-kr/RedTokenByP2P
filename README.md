@@ -51,7 +51,7 @@ truffle [truffleframework Pages](https://truffleframework.com/)
   
 ### REDToken 발행/token확인 방법  
 > ropsten test net 계약 확인  
-https://ropsten.etherscan.io/token/
+https://ropsten.etherscan.io/token/  
   
 > metamask 개별 등록 한 후, 계정 생성 필요  
   

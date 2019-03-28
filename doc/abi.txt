@@ -21,20 +21,6 @@
 		"constant": false,
 		"inputs": [
 			{
-				"name": "_to",
-				"type": "address"
-			}
-		],
-		"name": "approveAll",
-		"outputs": [],
-		"payable": true,
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
 				"name": "_owner",
 				"type": "address"
 			},
@@ -110,20 +96,6 @@
 		],
 		"payable": false,
 		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "_to",
-				"type": "address"
-			}
-		],
-		"name": "disapproveAll",
-		"outputs": [],
-		"payable": true,
-		"stateMutability": "payable",
 		"type": "function"
 	},
 	{

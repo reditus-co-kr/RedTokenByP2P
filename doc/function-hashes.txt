@@ -1,7 +1,6 @@
 {
 	"48263272": "redTokenCreatedTime(uint256)",
 	"095ea7b3": "approve(address,uint256)",
-	"0621472c": "approveAll(address)",
 	"70a08231": "balanceOf(address)",
 	"9dc29fac": "burn(address,uint256)",
 	"c4defb09": "burnAmountByShareUser(uint256,address,uint256)",
@@ -9,7 +8,6 @@
 	"0519ce79": "cfoAddress()",
 	"b047fb50": "cooAddress()",
 	"6b08e000": "createRedToken(address,string,uint256,uint256)",
-	"51dabd45": "disapproveAll(address)",
 	"081812fc": "getApproved(uint256)",
 	"e985e9c5": "isApprovedForAll(address,address)",
 	"44c22b58": "isPausedUser(address)",

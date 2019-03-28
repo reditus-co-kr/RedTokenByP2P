@@ -1,4 +1,4 @@
-pragma solidity 0.5.4;
+pragma solidity 0.5.7;
 
 /*
  * @dev Note: the ERC-165 identifier for this interface is 0xf0b9e5ba
