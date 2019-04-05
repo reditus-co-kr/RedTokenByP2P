@@ -57,3 +57,17 @@ https://ropsten.etherscan.io/token/
   
 > testnet 이더 받기  
 https://faucet.ropsten.be/   
+
+> 각 확인 주소  
+ropsten (https://ropsten.etherscan.io/address/0xc069e0394b549b3b17ee7750110b9d425e6a87d5#code)  
+0xC069E0394B549b3B17ee7750110B9D425e6A87D5  
+  
+  
+main net  
+before version by red token (https://etherscan.io/address/0x175bb51e8476a8c740573269d048adfd4c68ec5a#code)  
+0x175bB51E8476A8c740573269D048aDFd4c68Ec5A  
+  
+after version by red token (https://etherscan.io/address/0xe512cd0db34e774075bd7e034fb1e3dd96137177#code)  
+0xe512cd0db34e774075bd7e034fb1e3dd96137177  
+  
+  

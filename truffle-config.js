@@ -73,7 +73,7 @@ module.exports = {
       //from: 'ff369c07c8e365aa8fabe5e40a320d35cc350ba2',
       network_id: '*', // Match any network id
       gas: 4700000, // Gas limit used for deploys
-      gasPrice: 10000000000 // 10 gwei
+      gasPrice: 1000000000 // 1 gwei
     },
     // ropsten: {
     //   provider: () => new HDWalletProvider(mnemonic, `https://ropsten.infura.io/${infuraKey}`),
@@ -87,7 +87,7 @@ module.exports = {
       provider: new HDWalletProvider( mnemonic, `https://ropsten.infura.io/v3/${infuraKey}` ),
       network_id: 3,
       gas: 4700000,          // Gas limit used for deploys
-      gasPrice: 30000000000, // 30 gwei
+      gasPrice: 3000000000, // 3 gwei
       confirmations: 2,      // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 200     // # of blocks before a deployment times out  (minimum/default: 50)
     },
